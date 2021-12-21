@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
-const ShowCountries = ({ filteredCountries }) => {
+const ShowCountries = ({ filteredCountries, setFindCountry }) => {
   if (filteredCountries.length > 10 || filteredCountries.length === 0) {
     return <p>Too many matches, specify another filter</p>
   }
@@ -10,7 +10,10 @@ const ShowCountries = ({ filteredCountries }) => {
     return (
       <ul>
         {filteredCountries.map((e) => (
-          <li key={e.name.common}>{e.name.common}</li>
+          <li key={e.name.common}>
+            {e.name.common}{' '}
+            <button onClick={() => setFindCountry(e.name.common)}>Show</button>
+          </li>
         ))}
       </ul>
     )
@@ -29,7 +32,11 @@ const ShowCountries = ({ filteredCountries }) => {
           <li key={e}>{e}</li>
         ))}
       </ul>
-      <img src={filteredCountries[0].flags.svg} alt={filteredCountries[0].flag} width="200px" />
+      <img
+        src={filteredCountries[0].flags.svg}
+        alt={filteredCountries[0].flag}
+        width="200px"
+      />
     </>
   )
 }
@@ -45,13 +52,20 @@ const App = () => {
       .then((res) => setDataCountries(res.data))
   }, [])
 
-  const handleFindCountries = (e) => {
-    setFindCountry(e.target.value)
+  // Country filtering
+  useEffect(() => {
+    if (findCountry.length === 0) {
+      return setFilteredCountries([])
+    }
 
     const countries = dataCountries.filter((country) =>
-      country.name.common.toLowerCase().includes(e.target.value.toLowerCase())
+      country.name.common.toLowerCase().includes(findCountry.toLowerCase())
     )
     setFilteredCountries(countries)
+  }, [findCountry, dataCountries])
+
+  const handleFindCountries = (e) => {
+    setFindCountry(e.target.value)
   }
 
   return (
@@ -59,7 +73,10 @@ const App = () => {
       <h1>Data for countries</h1>
       find countries{' '}
       <input type="text" value={findCountry} onChange={handleFindCountries} />
-      <ShowCountries filteredCountries={filteredCountries} />
+      <ShowCountries
+        filteredCountries={filteredCountries}
+        setFindCountry={setFindCountry}
+      />
     </div>
   )
 }
